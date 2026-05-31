@@ -85,7 +85,7 @@ export function ResumeForm() {
     setLoadingMessage("Analyzing with AI...");
 
     const response = await analyzeResume(formData);
-
+    console.log("Analyze response:", response);
     setResult(response);
     setLoadingMessage("");
 

@@ -102,7 +102,7 @@ export async function analyzeResume(
 
     const google = createGoogleGenerativeAI({ apiKey });
     const { text } = await generateText({
-      model: google("gemini-1.5-flash"),
+      model: google("gemini-2.5-flash-lite"),
       prompt: buildPrompt(resumeText, jobDescription),
     });
 
