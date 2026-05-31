@@ -4,8 +4,9 @@ import { FormEvent, useState, useTransition } from "react";
 
 import {
   analyzeResume,
-  AnalyzeResumeResponse,
+  type AnalyzeResumeResponse,
 } from "@/app/actions/analyze";
+import { ResumeResults } from "@/components/resume-results/resume-results";
 import { Button } from "@/components/ui/button";
 import {
   FormField,
@@ -96,7 +97,7 @@ export function ResumeForm() {
   const isBusy = isPending || Boolean(loadingMessage);
 
   return (
-    <form className="min-h-0 w-full" onSubmit={handleSubmit}>
+    <form className="max-h-full min-h-0 w-full overflow-y-auto pr-1" onSubmit={handleSubmit}>
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField className="block" htmlFor="company" label="Company Name">
           <TextInput
@@ -155,59 +156,10 @@ export function ResumeForm() {
       </Button>
 
       {result?.success ? (
-        <section className="mt-5 rounded-[24px] border border-[#e8efff] bg-white/90 p-5 shadow-[0_0_18px_rgba(83,119,190,0.12)]">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[#6677ff]">
-                ATS Score
-              </p>
-              <p className="text-4xl font-bold tracking-[-0.06em] text-[#162033]">
-                {Math.round(result.data.score)}
-                <span className="text-xl text-[#667085]">/100</span>
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-5 grid gap-5 sm:grid-cols-2">
-            <ResultList
-              items={result.data.missing_keywords}
-              title="Missing Keywords"
-            />
-            <ResultList
-              items={result.data.actionable_bullets}
-              title="Actionable Fixes"
-            />
-          </div>
-        </section>
+        <div className="mt-6">
+          <ResumeResults analysis={result.data} />
+        </div>
       ) : null}
     </form>
-  );
-}
-
-type ResultListProps = {
-  items: string[];
-  title: string;
-};
-
-function ResultList({ items, title }: ResultListProps) {
-  return (
-    <div>
-      <h2 className="text-[18px] font-bold tracking-[-0.045em] text-[#162033]">
-        {title}
-      </h2>
-      {items.length > 0 ? (
-        <ul className="mt-3 space-y-2 text-[15px] font-medium leading-snug tracking-[-0.03em] text-[#485774]">
-          {items.map((item) => (
-            <li className="break-words rounded-xl bg-[#f5f7ff] px-3 py-2" key={item}>
-              {item}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="mt-3 rounded-xl bg-[#f5f7ff] px-3 py-2 text-[15px] font-medium tracking-[-0.03em] text-[#485774]">
-          Nothing major found here.
-        </p>
-      )}
-    </div>
   );
 }

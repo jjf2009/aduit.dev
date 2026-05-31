@@ -79,11 +79,20 @@ The core value is the AI response.
 3. The expected JSON structure is:
 
 ```json
-   {
-     "score": number,
-     "missing_keywords": ["string"],
-     "actionable_bullets": ["string"]
-   }
+{
+  "score": number,
+  "score_rationale": string,
+  "missing_keywords": [string],
+  "matched_keywords": [string],
+  "actionable_bullets": [string],
+  "section_feedback": {
+    "summary": string,
+    "experience": string,
+    "skills": string,
+    "education": string
+  },
+  "overall_verdict": "strong" | "moderate" | "weak"
+}
 
 ```
 

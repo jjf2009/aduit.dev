@@ -6,8 +6,17 @@ import PdfParse from "pdf-parse-new";
 
 export interface ResumeAnalysis {
   score: number;
+  score_rationale: string;
   missing_keywords: string[];
+  matched_keywords: string[];
   actionable_bullets: string[];
+  section_feedback: {
+    summary: string;
+    experience: string;
+    skills: string;
+    education: string;
+  };
+  overall_verdict: "strong" | "moderate" | "weak";
 }
 
 export type AnalyzeResumeResponse =
@@ -215,13 +224,31 @@ function isResumeAnalysis(value: unknown): value is ResumeAnalysis {
     Number.isFinite(value.score) &&
     value.score >= 0 &&
     value.score <= 100 &&
+    typeof value.score_rationale === "string" &&
     isStringArray(value.missing_keywords) &&
-    isStringArray(value.actionable_bullets)
+    isStringArray(value.matched_keywords) &&
+    isStringArray(value.actionable_bullets) &&
+    isSectionFeedback(value.section_feedback) &&
+    isOverallVerdict(value.overall_verdict)
   );
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isSectionFeedback(value: unknown): value is ResumeAnalysis["section_feedback"] {
+  return (
+    isRecord(value) &&
+    typeof value.summary === "string" &&
+    typeof value.experience === "string" &&
+    typeof value.skills === "string" &&
+    typeof value.education === "string"
+  );
+}
+
+function isOverallVerdict(value: unknown): value is ResumeAnalysis["overall_verdict"] {
+  return value === "strong" || value === "moderate" || value === "weak";
 }
 
 function isStringArray(value: unknown): value is string[] {
