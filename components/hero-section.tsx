@@ -1,6 +1,6 @@
 export function HeroSection() {
   return (
-    <section className="text-center lg:text-left">
+    <section className="text-center  flex items-center flex-col py-5 mt-3">
       <h1 className="max-w-[780px] text-[44px] font-semibold leading-[0.98] tracking-[-0.06em] text-[#0f1420] sm:text-[60px] lg:text-[72px]">
         <span className="bg-gradient-to-r from-[#9c7b80] via-[#05070b] to-[#858cb9] bg-clip-text text-transparent">
           Smart feedback

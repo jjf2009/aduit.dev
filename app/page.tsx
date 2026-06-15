@@ -9,10 +9,12 @@ export default function Home() {
       style={{ backgroundImage: "url('/background-image.png')" }}
     >
       <AppHeader />
-
-      <main className="mx-auto grid min-h-0 w-full max-w-[1144px] flex-1 items-center gap-6 py-5 lg:grid-cols-[0.82fr_1.18fr] lg:gap-10">
-        <HeroSection />
-        <ResumeForm />
+      <HeroSection />
+      <main className="flex justify-center w-full">
+        <div className="mx-auto w-full max-w-[600px]">
+          <ResumeForm  />{" "}
+          {/* Adjust max-w as needed */}
+        </div>
       </main>
     </div>
   );

@@ -97,25 +97,28 @@ export function ResumeForm() {
   const isBusy = isPending || Boolean(loadingMessage);
 
   return (
-    <form className="max-h-full min-h-0 w-full overflow-y-auto pr-1" onSubmit={handleSubmit}>
+    <form
+      className="max-h-full min-h-0 w-full overflow-y-auto pr-1 flex items-center flex-col"
+      onSubmit={handleSubmit}
+    >
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField className="block" htmlFor="company" label="Company Name">
           <TextInput
-            defaultValue="JavaScript Mastery"
             disabled={isBusy}
             id="company"
             name="company"
             type="text"
+            placeholder="Google"
           />
         </FormField>
 
         <FormField className="block" htmlFor="jobTitle" label="Job Title">
           <TextInput
-            defaultValue="Frontend Developer"
             disabled={isBusy}
             id="jobTitle"
             name="jobTitle"
             type="text"
+            placeholder="Software Developer"
           />
         </FormField>
 

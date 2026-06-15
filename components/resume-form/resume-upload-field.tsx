@@ -99,7 +99,7 @@ export function ResumeUploadField({
           name="resume"
           type="file"
         />
-        <div className="flex h-full w-full flex-col items-center justify-center rounded-[22px] bg-white px-4 text-center">
+        <div className="flex h-full w-full flex-col items-center justify-center rounded-[22px] bg-white px-4 py-2 text-center">
           <div className="mb-4 flex size-14 items-center justify-center rounded-xl bg-gradient-to-b from-[#969ba6] to-[#4d4f59] shadow-[0_12px_24px_rgba(41,45,58,0.2)]">
             <div className="flex size-8 items-center justify-center rounded-full bg-gradient-to-b from-white to-[#c6c9d1]">
               {selectedFile ? (
