@@ -1,4 +1,5 @@
-# AGENTS.md - Audit.dev / Resulyze
+
+# AGENTS.md - Audit.dev / Resulyze (V2 Specs)
 
 You are an expert Next.js and AI engineer helping build this resume analysis MVP.
 Write clean, simple, maintainable code. Prioritize speed to MVP and clarity over unnecessary abstraction.
@@ -8,81 +9,66 @@ Think like a senior product engineer operating under a strict 90-minute deadline
 
 ## Project Overview
 
-This project is currently a single-page resume analyzer branded in the UI as **RESULYZE**.
+This project is a single-page resume analyzer and workflow optimizer branded in the UI as **RESULYZE**.
 
 The app lets a student or early-career candidate:
-
 - Upload a PDF resume.
 - Enter company name, job title, and a job description.
-- Submit the form.
 - Extract resume text on the server with `pdf-parse-new`.
 - Analyze the resume against the job description with Gemini through the Vercel AI SDK.
-- Display an ATS-style score, matched keywords, missing keywords, section feedback, and concrete improvement bullets.
+- **[V2 Feature]** View an actionable, split-screen dashboard displaying critique alongside **instantly copyable LaTeX or Markdown bullet point rewrites** optimized for their target role.
 
 Keep the implementation focused on this one workflow:
-
 ```text
-Upload PDF + Paste JD -> Analyze -> Show Results
+Upload PDF + Paste JD -> Analyze -> Split-View Actionable Feedback & LaTeX Copier
+
 ```
 
-Do not turn this into a multi-page platform, account system, dashboard, resume builder, or database-backed product unless explicitly asked.
+Do not turn this into a multi-page platform, account system, dashboard, template builder, or database-backed product unless explicitly asked.
 
 ---
 
 ## Current Tech Stack
 
-- Next.js 16 App Router
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- `lucide-react` for icons
-- `pdf-parse-new` for server-side PDF text extraction
-- `ai` + `@ai-sdk/google` for Gemini calls
-- `class-variance-authority`, `clsx`, and `tailwind-merge` for UI utilities
-- Minimal shadcn-style UI primitives in `components/ui`
-
-Current scripts:
-
-```bash
-npm run dev
-npm run build
-npm run lint
-```
+* Next.js 16 App Router (No `src/` directory)
+* React 19
+* TypeScript
+* Tailwind CSS 4
+* `lucide-react` for icons
+* `pdf-parse-new` for server-side PDF text extraction
+* `ai` + `@ai-sdk/google` for Gemini calls
+* `class-variance-authority`, `clsx`, and `tailwind-merge` for UI utilities
+* Minimal shadcn-style UI primitives in `components/ui`
 
 ---
 
-## Banned Scope For V1
+## Banned Scope For V2 (Do Not Build)
 
 Do not introduce these unless the user explicitly asks:
 
-- Stripe
-- Clerk
-- NextAuth
-- Prisma
-- Supabase
-- LangChain
-- Any database
-- Multi-page routing
-- User accounts
-- Payment or subscription flows
-- Resume storage
-- Analytics/event tracking
-
-Ask before installing anything new.
-
+* Browser-based LaTeX compilers (e.g., trying to generate PDFs on the server or client)
+* Rich text wysiwyg editors (e.g., TipTap, Quill)
+* Database persistence, user accounts, authentication (Clerk, Supabase, NextAuth)
+* Multi-page routing or complex client state management engines (Zustand, Redux)
+* Gated: No user database writes, saved resume history tracking, or multi-tenant dashboard views until the V2 split layout and LaTeX export prompt are fully shipped and verified by your seniors. Keep Supabase purely as an identity gate if needed, nothing more.
 ---
 
 ## Current Architecture
 
-This repo uses top-level `app/`, `components/`, and `lib/` directories. It does **not** currently use `src/`.
-
 ```text
 app/
-  layout.tsx
-  page.tsx
+  layout.tsx            <-- Wraps children with AuthProvider
+  page.tsx              <-- Public Landing Page / Form
   globals.css
+  (auth)/               <-- [Frozen Scope] Auth UI routes
+    login/
+      page.tsx
+    signup/
+      page.tsx
   actions/
-    analyze.ts
+    analyze.ts          <-- Houses V2 Gemini Prompt & Data Validation
+  dashboard/            <-- [Gated Future Scope]
+    page.tsx
 
 components/
   app-header.tsx
@@ -91,79 +77,54 @@ components/
     form-field.tsx
     resume-form.tsx
     resume-upload-field.tsx
-  resume-results/
+  resume-results/       <-- Focus here next
     ats-score-card.tsx
     feedback-section.tsx
-    resume-results.tsx
+    latex-copier-card.tsx
+    resume-results.tsx  
     score-overview-card.tsx
   ui/
     button.tsx
 
+contexts/
+  AuthContext.tsx       <-- Provides session access across the application
+
 lib/
   utils.ts
+  supabase/             <-- Supabase JS clients
+    client.ts
+    server.ts
 
-public/
-  background-image.png
-  logo.png
+design/                 <-- Visual references from mockups
 
-design/
-  reference mockups and screenshots
 ```
-
-`app/page.tsx` is the only route. It composes `AppHeader`, `HeroSection`, and `ResumeForm`.
-
-`components/resume-form/resume-form.tsx` owns client state, form validation, loading messages, calls the server action, and renders results.
-
-`app/actions/analyze.ts` owns the business logic and must remain server-only with `"use server"`.
-
-`components/resume-results/*` renders the structured AI output. Keep result components presentational and typed from `ResumeAnalysis`.
 
 ---
 
 ## Server Action Contract
 
-The main server action is:
+The main server action remains stateless and server-only:
 
 ```ts
 analyzeResume(formData: FormData): Promise<AnalyzeResumeResponse>
+
 ```
 
 Expected form fields:
 
-- `resume`: PDF `File`
-- `description`: job description string
-- `company`: currently collected by the UI but not used by the action
-- `jobTitle`: currently collected by the UI but not used by the action
-
-Current behavior:
-
-1. Validate that `resume` exists and is a PDF.
-2. Reject PDFs over 10MB.
-3. Validate that a job description was provided.
-4. Convert the uploaded `File` to `ArrayBuffer`, then `Buffer`.
-5. Parse resume text using `pdf-parse-new`.
-6. Log extracted resume text to the server console for debugging.
-7. Require `GEMINI_API_KEY` or `GOOGLE_GENERATIVE_AI_API_KEY`.
-8. Call Gemini via `@ai-sdk/google` and `generateText`.
-9. Parse the model response as raw JSON.
-10. Validate the parsed JSON shape before returning it to the client.
-11. Return `{ success: false, error: string }` for validation, parsing, API, or unexpected failures.
-
-All PDF parsing must stay on the server. Never parse PDFs in client components.
+* `resume`: PDF `File`
+* `description`: job description string
+* `company`: target company name (Used in V2 Prompt)
+* `jobTitle`: target job title (Used in V2 Prompt)
 
 ---
 
-## AI Contract
+## AI Contract & Schema (V2 Update)
 
-The current Gemini model in `app/actions/analyze.ts` is:
+The Gemini model used is `gemini-2.5-flash-lite`.
+The prompt must require raw valid JSON only. It **must** inject the `company` and `jobTitle` variables to tailor the output.
 
-```ts
-gemini-2.5-flash-lite
-```
-
-The prompt must require raw valid JSON only. No Markdown, no code fences, no preamble, and no trailing commentary.
-
-The expected response shape is:
+The V2 response shape includes a dedicated array for copy-pasteable LaTeX rewrite lines:
 
 ```ts
 export interface ResumeAnalysis {
@@ -171,7 +132,12 @@ export interface ResumeAnalysis {
   score_rationale: string;
   missing_keywords: string[];
   matched_keywords: string[];
-  actionable_bullets: string[];
+  // V2 Improvement: Concrete before/after bullets with prepared LaTeX syntax
+  actionable_bullets: {
+    original_shortcoming: string;
+    suggested_revision_markdown: string;
+    suggested_revision_latex: string; // Ready for \item copy-paste into Overleaf
+  }[];
   section_feedback: {
     summary: string;
     experience: string;
@@ -180,112 +146,49 @@ export interface ResumeAnalysis {
   };
   overall_verdict: "strong" | "moderate" | "weak";
 }
+
 ```
 
-When editing prompt or parsing logic:
-
-- Keep the schema stable unless the UI is updated at the same time.
-- Keep runtime validation in place.
-- Keep graceful error responses.
-- Do not expose API keys to client code.
-
 ---
 
-## UI And Styling Rules
+## UI And Styling Rules (V2 Update)
 
-- Use Tailwind classes directly.
-- Match the existing visual direction from `design/` and current components.
-- Keep the first screen focused: header, hero copy, and analysis form.
-- The app is already componentized enough for V1. Avoid splitting single-use pieces further unless it clearly improves readability.
-- Use `lucide-react` icons for UI indicators.
-- Preserve long-text handling for job descriptions, file names, keywords, and AI output.
-- Results should remain scannable:
-  - score overview
-  - ATS card
-  - missing keywords
-  - matched keywords
-  - section feedback
-  - improvement checklist
-
-Important current styling note: the UI intentionally uses a designed landing/app hybrid with `public/background-image.png`, rounded upload surfaces, gradient hero text, and compact result cards. Keep changes visually consistent.
-
----
-
-## State Management
-
-- Use local React state only.
-- `ResumeForm` currently uses `useState` and `useTransition`.
-- Do not add Redux, Zustand, React Query, or global stores.
-- Keep loading states explicit. Current messages include:
-  - `Extracting text from your PDF...`
-  - `Analyzing with AI...`
+* **Two-Column Layout:** When results load, transition the UI smoothly into a balanced, clean split layout. Left side: High-level metrics and contextual section feedback. Right side: The optimization workflow (Actionable revisions + LaTeX/Markdown export cards).
+* Use Tailwind CSS 4 classes directly.
+* Use `lucide-react` icons for quick feedback actions (e.g., `Check`, `Copy`, `Code`).
+* Keep things stateless: Use a single click handler to copy text to clipboard with quick UI feedback states ("Copied!").
 
 ---
 
 ## TypeScript Rules
 
-- Keep strict TypeScript.
-- Do not use `any`.
-- Prefer explicit exported types for server action data returned to the UI.
-- Validate unknown AI output before treating it as `ResumeAnalysis`.
-- Keep action response as a discriminated union:
+* Keep strict TypeScript. No `any`.
+* Validate the schema explicitly inside `analyze.ts` before returning it to the client components.
 
 ```ts
 export type AnalyzeResumeResponse =
   | { success: true; data: ResumeAnalysis }
   | { success: false; error: string };
+
 ```
-
----
-
-## Environment Variables
-
-The server action accepts either:
-
-```text
-GEMINI_API_KEY
-GOOGLE_GENERATIVE_AI_API_KEY
-```
-
-Never read these from client components.
-Never prefix these with `NEXT_PUBLIC_`.
-Never print secret values.
-
----
-
-## Current Implementation Notes
-
-- The app is already past the initial PDF-parser proof phase.
-- `analyzeResume` now includes PDF parsing, Gemini analysis, JSON parsing, and runtime validation.
-- The upload field validates PDF type and 10MB max size on the client.
-- The server repeats file validation, which should remain in place.
-- `company` and `jobTitle` are collected but not yet included in the AI prompt.
-- `app/layout.tsx` still has default metadata (`Create Next App`). Updating metadata is a reasonable near-term cleanup.
-- The header upload button is visual only right now. Wire it to focus the upload input only if requested.
 
 ---
 
 ## Near-Term Priorities
 
-When asked what to do next, prefer these focused improvements:
+When asked what to do next, execute in this order:
 
-1. Include `company` and `jobTitle` in the server action prompt.
-2. Update page metadata to match the product.
-3. Improve submit/loading status so extraction and AI phases are represented accurately.
-4. Remove or gate debug logging of full resume text before production.
-5. Run `npm run lint` and `npm run build` after meaningful code changes.
+1. Update `app/actions/analyze.ts` to utilize `company` and `jobTitle`, and update the prompt to enforce the new V2 JSON schema (including `suggested_revision_latex`).
+2. Build `components/resume-results/latex-copier-card.tsx` to handle rendering the before/after comparisons and clipboard logic.
+3. Update `components/resume-results/resume-results.tsx` to use a 2-column layout for easy review.
+4. Update page metadata in `app/layout.tsx`.
+5. Run `npm run lint` and `npm run build` to verify correctness.
 
-Avoid adding features outside the resume analyzer workflow.
+```
 
----
+***
 
-## Final Reminder
+### ⚡ Coach Checkpoint
+Your `AGENTS.md` is locked and ready for V2. Open up `app/actions/analyze.ts` and let's update the prompt and types first. Paste your current server action file here so we can inject the LaTeX output generation safely.
 
-Before generating code:
-
-- Read the relevant files first.
-- Keep changes small and directly tied to the request.
-- Preserve the single-page MVP.
-- Keep all PDF and AI work server-side.
-- Handle errors without crashing the UI.
-- Do not add scope just because the app could eventually need it.
+```

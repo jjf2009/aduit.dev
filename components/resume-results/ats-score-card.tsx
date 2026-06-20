@@ -16,20 +16,33 @@ export function AtsScoreCard({ analysis }: AtsScoreCardProps) {
   const hasSkillsFeedback = analysis.section_feedback.skills.trim().length > 0;
 
   return (
-    <section
+    <details
       className={cn(
-        "rounded-[8px] border p-5 shadow-[0_10px_30px_rgba(15,23,42,0.08)] sm:p-7",
+        "group rounded-[8px] border shadow-[0_10px_30px_rgba(15,23,42,0.08)]",
         tone === "good" && "border-emerald-100 bg-[#f3fffb]",
         tone === "ok" && "border-orange-100 bg-[#fffaf2]",
         tone === "bad" && "border-red-100 bg-[#fff6f6]",
       )}
+      open
     >
-      <div className="flex items-center gap-4">
-        <StatusBadge tone={tone} />
-        <h2 className="text-[24px] font-bold tracking-[-0.04em] text-[#172032]">
-          ATS Score - {Math.round(analysis.score)}/100
-        </h2>
-      </div>
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 sm:p-7 [&::-webkit-details-marker]:hidden">
+        <div className="flex items-center gap-4">
+          <StatusBadge tone={tone} />
+          <div>
+            <h2 className="text-[20px] font-bold tracking-[-0.04em] text-[#172032]">
+              ATS Score
+            </h2>
+            <p className="text-[14px] font-medium tracking-[-0.03em] text-[#56637a]">
+              {Math.round(analysis.score)}/100
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center rounded-full bg-white/50 p-1">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#98a2b3] transition group-open:rotate-180"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+      </summary>
+
+      <div className="border-t border-black/5 px-5 pb-5 sm:px-7 sm:pb-7 pt-2">
 
       <div className="mt-7 space-y-5">
         <div className="space-y-3">
@@ -72,7 +85,8 @@ export function AtsScoreCard({ analysis }: AtsScoreCardProps) {
           Want a better score? Improve your resume by applying the suggestions listed below.
         </p>
       </div>
-    </section>
+      </div>
+    </details>
   );
 }
 
