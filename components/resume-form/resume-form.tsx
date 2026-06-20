@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 
 import {
   analyzeResume,
@@ -14,6 +15,7 @@ import {
   TextInput,
 } from "@/components/resume-form/form-field";
 import { ResumeUploadField } from "@/components/resume-form/resume-upload-field";
+import { savePdf } from "@/lib/storage";
 
 const MAX_PDF_SIZE_BYTES = 10 * 1024 * 1024;
 
@@ -24,6 +26,7 @@ export function ResumeForm() {
   const [uploadError, setUploadError] = useState("");
   const [loadingMessage, setLoadingMessage] = useState("");
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   function handleFileChange(file: File | null) {
     setSelectedFile(file);
@@ -91,6 +94,16 @@ export function ResumeForm() {
 
     if (!response.success) {
       setFormError(response.error);
+    } else {
+      try {
+        localStorage.setItem("resumeAnalysisResult", JSON.stringify(response.data));
+        if (selectedFile) {
+          await savePdf(selectedFile);
+        }
+      } catch (e) {
+        console.error("Failed to save to storage", e);
+      }
+      router.push("/dashboard/results");
     }
   }
 
@@ -158,11 +171,7 @@ export function ResumeForm() {
         {loadingMessage || "Save & Analyze Resume"}
       </Button>
 
-      {result?.success ? (
-        <div className="mt-6">
-          <ResumeResults analysis={result.data} />
-        </div>
-      ) : null}
+
     </form>
   );
 }

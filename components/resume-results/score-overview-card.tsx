@@ -1,5 +1,6 @@
 import type { ResumeAnalysis } from "@/app/actions/analyze";
 import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
 
 type ScoreOverviewCardProps = {
   analysis: ResumeAnalysis;
@@ -11,7 +12,25 @@ export function ScoreOverviewCard({ analysis }: ScoreOverviewCardProps) {
     analysis.missing_keywords.length + analysis.actionable_bullets.length;
 
   return (
-    <section className="rounded-[8px] border border-[#edf0f5] bg-white p-5 shadow-[0_18px_45px_rgba(20,33,61,0.08)] sm:p-7">
+    <details className="group rounded-[8px] border border-[#edf0f5] bg-white shadow-[0_18px_45px_rgba(20,33,61,0.08)]" open>
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 sm:p-7 [&::-webkit-details-marker]:hidden">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-100">
+            <span className="text-[18px] font-bold text-[#172032]">{score}</span>
+          </div>
+          <div>
+            <h2 className="text-[20px] font-bold tracking-[-0.045em] text-[#172032]">
+              Your Resume Score
+            </h2>
+            <p className="text-[14px] font-medium tracking-[-0.03em] text-[#56637a]">
+              {issueCount} issues found
+            </p>
+          </div>
+        </div>
+        <ChevronDown className="size-5 shrink-0 text-[#98a2b3] transition group-open:rotate-180" />
+      </summary>
+      
+      <div className="border-t border-[#edf0f5] p-5 sm:p-7">
       <div className="grid gap-5 sm:grid-cols-[150px_1fr] sm:items-center">
         <div className="relative h-[100px] w-[150px]" aria-label={`Resume score ${score} out of 100`}>
           <div
@@ -65,7 +84,8 @@ export function ScoreOverviewCard({ analysis }: ScoreOverviewCardProps) {
           tone={analysis.actionable_bullets.length > 0 ? "moderate" : "strong"}
         />
       </div>
-    </section>
+      </div>
+    </details>
   );
 }
 

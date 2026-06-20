@@ -32,7 +32,7 @@ export function ResumeResults({ analysis }: ResumeResultsProps) {
 
   const actionableItems = analysis.actionable_bullets.map<FeedbackItem>((item, index) => ({
     title: `Fix ${index + 1}`,
-    body: item,
+    body: `${item.original_shortcoming} -> ${item.suggested_revision_markdown}`,
     tone: "warning",
   }));
 
@@ -47,9 +47,14 @@ export function ResumeResults({ analysis }: ResumeResultsProps) {
       <ScoreOverviewCard analysis={analysis} />
       <AtsScoreCard analysis={analysis} />
 
-      <div className="rounded-[8px] bg-white">
+      <div className="rounded-[8px] border border-[#edf0f5] bg-white px-5 shadow-[0_10px_30px_rgba(15,23,42,0.08)] sm:px-7">
         <FeedbackSection
           defaultOpen
+          items={actionableItems}
+          scoreLabel={`${analysis.actionable_bullets.length} fixes`}
+          title="Resume Improvement Checklist"
+        />
+        <FeedbackSection
           items={missingKeywordItems}
           scoreLabel={`${analysis.missing_keywords.length} missing`}
           title="Missing Keywords"
@@ -62,11 +67,6 @@ export function ResumeResults({ analysis }: ResumeResultsProps) {
         <FeedbackSection
           items={sectionFeedbackItems}
           title="Section Feedback"
-        />
-        <FeedbackSection
-          items={actionableItems}
-          scoreLabel={`${analysis.actionable_bullets.length} fixes`}
-          title="Resume Improvement Checklist"
         />
       </div>
     </section>

@@ -7,7 +7,7 @@ import { User } from "@supabase/supabase-js"; // 1. Imported User type
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  supabase: any;
+  supabase: ReturnType<typeof createClient>;
 }
 
 // 3. Provided the correct initial type and value to createContext
@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [supabase.auth]);
 
   return (
     <AuthContext.Provider value={{ user, loading, supabase }}>

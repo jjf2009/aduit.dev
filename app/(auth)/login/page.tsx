@@ -7,10 +7,10 @@ import { useRouter } from "next/navigation";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLogin, setIsLogin] = useState(true);
+  const isLogin = true;
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
- const { user,supabase} = useAuth();
+  const { supabase } = useAuth();
   const router = useRouter();
 
   const handleEmailAuth = async (e) => {

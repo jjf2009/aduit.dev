@@ -9,7 +9,11 @@ export interface ResumeAnalysis {
   score_rationale: string;
   missing_keywords: string[];
   matched_keywords: string[];
-  actionable_bullets: string[];
+  actionable_bullets: {
+    original_shortcoming: string;
+    suggested_revision_markdown: string;
+    suggested_revision_latex: string;
+  }[];
   section_feedback: {
     summary: string;
     experience: string;
@@ -41,6 +45,8 @@ export async function analyzeResume(
       "jobDescription",
       "jd",
     ]);
+    const company = formData.get("company") as string | null;
+    const jobTitle = formData.get("jobTitle") as string | null;
 
     if (!(resumeFile instanceof File)) {
       return {
@@ -103,7 +109,7 @@ export async function analyzeResume(
     const google = createGoogleGenerativeAI({ apiKey });
     const { text } = await generateText({
       model: google("gemini-2.5-flash-lite"),
-      prompt: buildPrompt(resumeText, jobDescription),
+      prompt: buildPrompt(resumeText, jobDescription, company || "Unknown", jobTitle || "Unknown"),
     });
 
     const analysis = parseAnalysisJson(text);
@@ -141,9 +147,12 @@ function getRequiredString(formData: FormData, keys: string[]): string {
   return "";
 }
 
-function buildPrompt(resumeText: string, jobDescription: string): string {
+function buildPrompt(resumeText: string, jobDescription: string, company: string, jobTitle: string): string {
   return `
 You are a senior ATS (Applicant Tracking System) expert and career coach specializing in helping students and early-career candidates optimize their resumes.
+
+Target Company: ${company}
+Target Role: ${jobTitle}
 
 Your task: Analyze the candidate's resume against the provided job description and return a structured evaluation.
 
@@ -163,7 +172,13 @@ JSON SCHEMA:
   "score_rationale": string,
   "missing_keywords": [string],
   "matched_keywords": [string],
-  "actionable_bullets": [string],
+  "actionable_bullets": [
+    {
+      "original_shortcoming": string,
+      "suggested_revision_markdown": string,
+      "suggested_revision_latex": string
+    }
+  ],
   "section_feedback": {
     "summary": string,
     "experience": string,
@@ -180,7 +195,7 @@ FIELD DEFINITIONS:
 - score_rationale: One sentence explaining what drove the score up or down.
 - missing_keywords: Skills, tools, certifications, or domain terms in the JD that are absent from the resume. Be specific (e.g., "REST APIs", "Agile/Scrum", "SQL").
 - matched_keywords: Skills or terms from the JD that ARE present in the resume. Helps the candidate know what's working.
-- actionable_bullets: 3–6 concrete, student-friendly rewrite suggestions. Each must reference a specific resume section or line type (e.g., "Under your internship at X, add a bullet quantifying..."). Avoid vague advice like "improve your resume."
+- actionable_bullets: 3–6 concrete, student-friendly rewrite suggestions. Each must identify an 'original_shortcoming', provide a 'suggested_revision_markdown', and a 'suggested_revision_latex' that is ready for \\item copy-paste into Overleaf. Tailor these for the target company and role.
 - section_feedback: A brief 1–2 sentence critique for each standard resume section. If a section is missing entirely, note that.
 - overall_verdict: "strong" if score ≥ 75, "moderate" if 50–74, "weak" if below 50.
 
@@ -227,7 +242,7 @@ function isResumeAnalysis(value: unknown): value is ResumeAnalysis {
     typeof value.score_rationale === "string" &&
     isStringArray(value.missing_keywords) &&
     isStringArray(value.matched_keywords) &&
-    isStringArray(value.actionable_bullets) &&
+    isActionableBulletsArray(value.actionable_bullets) &&
     isSectionFeedback(value.section_feedback) &&
     isOverallVerdict(value.overall_verdict)
   );
@@ -244,6 +259,19 @@ function isSectionFeedback(value: unknown): value is ResumeAnalysis["section_fee
     typeof value.experience === "string" &&
     typeof value.skills === "string" &&
     typeof value.education === "string"
+  );
+}
+
+function isActionableBulletsArray(value: unknown): value is ResumeAnalysis["actionable_bullets"] {
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (item) =>
+        isRecord(item) &&
+        typeof item.original_shortcoming === "string" &&
+        typeof item.suggested_revision_markdown === "string" &&
+        typeof item.suggested_revision_latex === "string"
+    )
   );
 }
 
