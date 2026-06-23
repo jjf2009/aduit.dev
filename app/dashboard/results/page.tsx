@@ -13,6 +13,7 @@ export default function ResultsPage() {
     const data = localStorage.getItem("resumeAnalysisResult");
     if (data) {
       try {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setAnalysis(JSON.parse(data));
       } catch (e) {
         console.error(e);
