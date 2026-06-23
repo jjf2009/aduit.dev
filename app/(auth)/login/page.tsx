@@ -13,7 +13,7 @@ export default function LoginPage() {
   const { supabase } = useAuth();
   const router = useRouter();
 
-  const handleEmailAuth = async (e) => {
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -29,12 +29,12 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { redirectTo: `${location.origin}/auth/callback` },
+          options: { emailRedirectTo: `${location.origin}/auth/callback` },
         });
         if (error) throw error;
         alert("Check your email for confirmation!");
       }
-    } catch (error) {
+    } catch (error: any) {
       setError(error.message);
     } finally {
       setLoading(false);

@@ -18,7 +18,7 @@ export default function SignUpPage() {
     }
   }, [user, router]);
 
-  const handleSignUp = async (e) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -27,14 +27,14 @@ export default function SignUpPage() {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { redirectTo: `${window.location.origin}/auth/callback` },
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       });
 
       if (error) throw error;
 
       alert("Check your email for confirmation!");
       router.push("/login");
-    } catch (error) {
+    } catch (error: any) {
       setError(error.message);
     } finally {
       setLoading(false);
