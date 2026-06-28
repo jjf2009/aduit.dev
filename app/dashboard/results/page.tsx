@@ -35,8 +35,8 @@ export default function ResultsPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-80px)] w-full gap-6 p-6">
-      <div className="w-1/2 overflow-hidden rounded-xl border border-[#e7ebf1] bg-gray-50 shadow-sm">
+    <div className="flex h-[calc(100vh-80px)] w-full flex-col gap-6 p-6 md:flex-row">
+      <div className="hidden w-1/2 overflow-hidden rounded-xl border border-[#e7ebf1] bg-gray-50 shadow-sm md:block">
         {pdfUrl ? (
           <object data={pdfUrl} type="application/pdf" className="h-full w-full">
             <p className="p-4 text-center text-gray-500">
@@ -49,7 +49,7 @@ export default function ResultsPage() {
           </div>
         )}
       </div>
-      <div className="w-1/2 overflow-y-auto pr-2 pb-10">
+      <div className="w-full overflow-y-auto pr-2 pb-10 md:w-1/2">
         <ResumeResults analysis={analysis} />
       </div>
     </div>

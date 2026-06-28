@@ -25,9 +25,7 @@ export default function Home() {
         <main className="mx-auto max-w-[1280px] mt-24 flex flex-col items-center">
           <div className="text-center space-y-4 mb-20">
             <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-[#424248]">
-              Track Your Applications
-              <br />
-              <span className="text-[#64646a]">& Resume Ratings</span>
+              Get Your Resume Rated
             </h1>
             <p className="text-xl sm:text-2xl text-slate-500 max-w-2xl mx-auto pt-4 font-medium">
               Review your submissions and check AI-powered feedback.
